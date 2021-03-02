@@ -1,0 +1,621 @@
+************************************************************************************************************
+分支少，连续，类似if...else...
+	if (0 == a)
+0084191D 83 7D F8 00          cmp         dword ptr [a],0         与条件作比较
+00841921 75 0F                jne         main+62h (0841932h)     反条件跳转
+	{
+		printf("0\n");
+00841923 68 30 7B 84 00       push        offset string "0\n" (0847B30h)  
+00841928 E8 1E F7 FF FF       call        _printf (084104Bh)  
+0084192D 83 C4 04             add         esp,4  
+00841930 EB 22                jmp         main+84h (0841954h)  
+	}
+	else if (1 == a)
+00841932 83 7D F8 01          cmp         dword ptr [a],1         与条件做比较
+00841936 75 0F                jne         main+77h (0841947h)     反条件跳转
+	{
+		printf("1\n");
+00841938 68 34 7B 84 00       push        offset string "1\n" (0847B34h)  
+0084193D E8 09 F7 FF FF       call        _printf (084104Bh)  
+00841942 83 C4 04             add         esp,4  
+	}
+	else
+00841945 EB 0D                jmp         main+84h (0841954h)  
+	{
+		printf("2\n");
+00841947 68 38 7B 84 00       push        offset string "2\n" (0847B38h)  
+0084194C E8 FA F6 FF FF       call        _printf (084104Bh)  
+00841951 83 C4 04             add         esp,4  
+	}
+=========================================================================================================
+	switch (a)
+00841954 8B 45 F8             mov         eax,dword ptr [a]  
+00841957 89 85 30 FF FF FF    mov         dword ptr [ebp-0D0h],eax  
+0084195D 83 BD 30 FF FF FF 00 cmp         dword ptr [ebp-0D0h],0         与条件比较
+00841964 74 0B                je          main+0A1h (0841971h)           符合条件跳转到case
+00841966 83 BD 30 FF FF FF 01 cmp         dword ptr [ebp-0D0h],1  
+0084196D 74 11                je          main+0B0h (0841980h)  
+0084196F EB 1E                jmp         main+0BFh (084198Fh)  
+	{
+	case 0:
+		printf("0\n");
+00841971 68 30 7B 84 00       push        offset string "0\n" (0847B30h)  
+00841976 E8 D0 F6 FF FF       call        _printf (084104Bh)  
+0084197B 83 C4 04             add         esp,4  
+		break;
+0084197E EB 1C                jmp         main+0CCh (084199Ch)  
+	case 1:
+		printf("1\n");
+00841980 68 34 7B 84 00       push        offset string "1\n" (0847B34h)  
+00841985 E8 C1 F6 FF FF       call        _printf (084104Bh)  
+0084198A 83 C4 04             add         esp,4  
+		break;
+0084198D EB 0D                jmp         main+0CCh (084199Ch)  
+	default:
+		printf("2\n");
+0084198F 68 38 7B 84 00       push        offset string "2\n" (0847B38h)  
+00841994 E8 B2 F6 FF FF       call        _printf (084104Bh)  
+00841999 83 C4 04             add         esp,4  
+		break;
+	}
+************************************************************************************************************
+分支多， 连续
+	switch (a)
+0070197E 8B 45 F8             mov         eax,dword ptr [a]  
+00701981 89 85 30 FF FF FF    mov         dword ptr [ebp-0D0h],eax                 switch 参数
+00701987 83 BD 30 FF FF FF 04 cmp         dword ptr [ebp-0D0h],4                   与最大下标作比较
+0070198E 77 56                ja          $LN16+0Fh (07019E6h)                     大于直接跳转到default
+00701990 8B 8D 30 FF FF FF    mov         ecx,dword ptr [ebp-0D0h]  
+00701996 FF 24 8D 18 1A 70 00 jmp         dword ptr [ecx*4+701A18h]                switch参数作为索引查找对应的case语句地址
+跳表地址
+0x00701A18  9d 19 70 00  ?.p.             0x0070199d         case 0
+0x00701A1C  ac 19 70 00  ?.p.             0x007019ac         case 1
+0x00701A20  bb 19 70 00  ?.p.             0x007019bb         case 2
+0x00701A24  ca 19 70 00  ?.p.             0x007019ca         case 3
+0x00701A28  d7 19 70 00  ?.p.             0x007019d7         case 4
+	{
+	case 0:
+		printf("0\n");
+0070199D 68 30 7B 70 00       push        offset string "0\n" (0707B30h)  
+	{
+	case 0:
+		printf("0\n");
+007019A2 E8 A4 F6 FF FF       call        _printf (070104Bh)  
+007019A7 83 C4 04             add         esp,4  
+		break;
+007019AA EB 47                jmp         $LN16+1Ch (07019F3h)  
+	case 1:
+		printf("1\n");
+007019AC 68 34 7B 70 00       push        offset string "1\n" (0707B34h)  
+007019B1 E8 95 F6 FF FF       call        _printf (070104Bh)  
+007019B6 83 C4 04             add         esp,4  
+		break;
+007019B9 EB 38                jmp         $LN16+1Ch (07019F3h)  
+	case 2:
+		printf("2\n");
+007019BB 68 38 7B 70 00       push        offset string "2\n" (0707B38h)  
+007019C0 E8 86 F6 FF FF       call        _printf (070104Bh)  
+007019C5 83 C4 04             add         esp,4  
+		break;
+007019C8 EB 29                jmp         $LN16+1Ch (07019F3h)  
+	case 3:
+		printf("3\n");
+007019CA 68 3C 7B 70 00       push        offset string "3\n" (0707B3Ch)  
+007019CF E8 77 F6 FF FF       call        _printf (070104Bh)  
+007019D4 83 C4 04             add         esp,4  
+	case 4:
+		printf("4\n");
+007019D7 68 40 7B 70 00       push        offset string "4\n" (0707B40h)  
+007019DC E8 6A F6 FF FF       call        _printf (070104Bh)  
+007019E1 83 C4 04             add         esp,4  
+		break;
+007019E4 EB 0D                jmp         $LN16+1Ch (07019F3h)  
+	default:
+		printf("5\n");
+007019E6 68 44 7B 70 00       push        offset string "5\n" (0707B44h)  
+007019EB E8 5B F6 FF FF       call        _printf (070104Bh)  
+007019F0 83 C4 04             add         esp,4  
+		break;
+	}
+
+************************************************************************************************************
+间隔较大，最小值和最大值不超过256，稀疏矩阵
+
+0x00821A20  a4 19 82 00  ?.?.         0x008219a4        case 0               0
+0x00821A24  b3 19 82 00  ?.?.         0x008219b3        case 1               1
+0x00821A28  c2 19 82 00  ?.?.         0x008219c2        case 8               2
+0x00821A2C  de 19 82 00  ?.?.         0x008219de        case 26              3
+0x00821A30  d1 19 82 00  ?.?.         0x008219d1        case 20              4
+0x00821A34  ed 19 82 00  ?.?.         0x008219ed        default              5
+
+26项 用于存储每一项
+0x00821A38  00                  
+0x00821A39  01                  
+0x00821A3A  05 
+0x00821A3B  05 
+0x00821A3C  05 
+0x00821A3D  05 
+0x00821A3E  05 
+0x00821A3F  05
+0x00821A40  02 
+0x00821A41  05 
+0x00821A42  05 
+0x00821A43  05 
+0x00821A44  05 
+0x00821A45  05 
+0x00821A46  05 
+0x00821A47  05 
+0x00821A48  05 
+0x00821A49  05 
+0x00821A4A  05 
+0x00821A4B  05  
+0x00821A4C  03 
+0x00821A4D  05 
+0x00821A4E  05 
+0x00821A4F  05  
+0x00821A50  05 
+0x00821A51  05 
+0x00821A52  04                                      
+
+
+	switch (a)
+0082197E 8B 45 F8             mov         eax,dword ptr [a]                   
+00821981 89 85 30 FF FF FF    mov         dword ptr [ebp-0D0h],eax           switch 参数
+00821987 83 BD 30 FF FF FF 1A cmp         dword ptr [ebp-0D0h],1Ah           与分支语句中最大值作比较
+0082198E 77 5D                ja          $LN16+0Fh (08219EDh)               跳转到default
+00821990 8B 8D 30 FF FF FF    mov         ecx,dword ptr [ebp-0D0h]           
+00821996 0F B6 91 38 1A 82 00 movzx       edx,byte ptr [ecx+821A38h]         得到索引表中的值
+0082199D FF 24 95 20 1A 82 00 jmp         dword ptr [edx*4+821A20h]          根据索引表中的值去跳转表中找到对应的case地址
+	{
+	case 0:
+		printf("0\n");
+008219A4 68 30 7B 82 00       push        offset string "0\n" (0827B30h)  
+	{
+	case 0:
+		printf("0\n");
+008219A9 E8 9D F6 FF FF       call        _printf (082104Bh)  
+008219AE 83 C4 04             add         esp,4  
+		break;
+008219B1 EB 47                jmp         $LN16+1Ch (08219FAh)  
+	case 1:
+		printf("1\n");
+008219B3 68 34 7B 82 00       push        offset string "1\n" (0827B34h)  
+008219B8 E8 8E F6 FF FF       call        _printf (082104Bh)  
+008219BD 83 C4 04             add         esp,4  
+		break;
+008219C0 EB 38                jmp         $LN16+1Ch (08219FAh)  
+	case 8:
+		printf("2\n");
+008219C2 68 38 7B 82 00       push        offset string "2\n" (0827B38h)  
+008219C7 E8 7F F6 FF FF       call        _printf (082104Bh)  
+008219CC 83 C4 04             add         esp,4  
+		break;
+008219CF EB 29                jmp         $LN16+1Ch (08219FAh)  
+	case 26:
+		printf("3\n");
+008219D1 68 3C 7B 82 00       push        offset string "3\n" (0827B3Ch)  
+008219D6 E8 70 F6 FF FF       call        _printf (082104Bh)  
+008219DB 83 C4 04             add         esp,4  
+	case 20:
+		printf("4\n");
+008219DE 68 40 7B 82 00       push        offset string "4\n" (0827B40h)  
+008219E3 E8 63 F6 FF FF       call        _printf (082104Bh)  
+008219E8 83 C4 04             add         esp,4  
+		break;
+008219EB EB 0D                jmp         $LN16+1Ch (08219FAh)  
+	default:
+		printf("5\n");
+008219ED 68 44 7B 82 00       push        offset string "5\n" (0827B44h)  
+008219F2 E8 54 F6 FF FF       call        _printf (082104Bh)  
+008219F7 83 C4 04             add         esp,4  
+		break;
+	}
+************************************************************************************************************
+不连续， 间隔大，二分查找， 二叉树
+	switch (a)
+0090191D 8B 45 F8             mov         eax,dword ptr [a]  
+00901920 89 85 30 FF FF FF    mov         dword ptr [ebp-0D0h],eax                   switch参数
+00901926 81 BD 30 FF FF FF 9A 02 00 00 cmp         dword ptr [ebp-0D0h],29Ah         与666比较
+00901930 7F 2F                jg          main+91h (0901961h)                        大于666，跳转到与777比较
+00901932 81 BD 30 FF FF FF 9A 02 00 00 cmp         dword ptr [ebp-0D0h],29Ah  
+0090193C 74 6A                je          main+0D8h (09019A8h)  
+0090193E 83 BD 30 FF FF FF 00 cmp         dword ptr [ebp-0D0h],0  
+00901945 74 34                je          main+0ABh (090197Bh)  
+00901947 81 BD 30 FF FF FF 01 01 00 00 cmp         dword ptr [ebp-0D0h],101h         257
+00901951 74 37                je          main+0BAh (090198Ah)  
+00901953 81 BD 30 FF FF FF F6 01 00 00 cmp         dword ptr [ebp-0D0h],1F6h         502
+0090195D 74 3A                je          main+0C9h (0901999h)  
+0090195F EB 74                jmp         main+105h (09019D5h)  
+00901961 81 BD 30 FF FF FF 09 03 00 00 cmp         dword ptr [ebp-0D0h],309h         777
+0090196B 74 4A                je          main+0E7h (09019B7h)  
+0090196D 81 BD 30 FF FF FF 00 04 00 00 cmp         dword ptr [ebp-0D0h],400h         1024
+00901977 74 4D                je          main+0F6h (09019C6h)  
+00901979 EB 5A                jmp         main+105h (09019D5h)                       default
+	{
+	case 0:
+		printf("0\n");
+0090197B 68 30 7B 90 00       push        offset string "0\n" (0907B30h)  
+00901980 E8 C6 F6 FF FF       call        _printf (090104Bh)  
+00901985 83 C4 04             add         esp,4  
+		break;
+00901988 EB 58                jmp         main+112h (09019E2h)  
+	case 257:
+		printf("257\n");
+0090198A 68 34 7B 90 00       push        offset string "257\n" (0907B34h)  
+0090198F E8 B7 F6 FF FF       call        _printf (090104Bh)  
+00901994 83 C4 04             add         esp,4  
+		break;
+00901997 EB 49                jmp         main+112h (09019E2h)  
+	case 502:
+		printf("502\n");
+00901999 68 3C 7B 90 00       push        offset string "502\n" (0907B3Ch)  
+0090199E E8 A8 F6 FF FF       call        _printf (090104Bh)  
+009019A3 83 C4 04             add         esp,4  
+		break;
+009019A6 EB 3A                jmp         main+112h (09019E2h)  
+	case 666:
+		printf("666\n");
+009019A8 68 44 7B 90 00       push        offset string "666\n" (0907B44h)  
+009019AD E8 99 F6 FF FF       call        _printf (090104Bh)  
+009019B2 83 C4 04             add         esp,4  
+		break;
+009019B5 EB 2B                jmp         main+112h (09019E2h)  
+	case 777:
+		printf("777\n");
+009019B7 68 4C 7B 90 00       push        offset string "777\n" (0907B4Ch)  
+009019BC E8 8A F6 FF FF       call        _printf (090104Bh)  
+009019C1 83 C4 04             add         esp,4  
+		break;
+009019C4 EB 1C                jmp         main+112h (09019E2h)  
+	case 1024:
+		printf("1024\n");
+009019C6 68 54 7B 90 00       push        offset string "1024\n" (0907B54h)  
+009019CB E8 7B F6 FF FF       call        _printf (090104Bh)  
+009019D0 83 C4 04             add         esp,4  
+		break;
+009019D3 EB 0D                jmp         main+112h (09019E2h)  
+	default:
+		printf("unkonwn\n");
+009019D5 68 5C 7B 90 00       push        offset string "unkonwn\n" (0907B5Ch)  
+009019DA E8 6C F6 FF FF       call        _printf (090104Bh)  
+009019DF 83 C4 04             add         esp,4  
+		break;
+	}
+===================================================================================================
+vs2017 居然无优化？（debug） 顺序比较
+	switch (a)
+00AB195C 0F 84 F0 00 00 00    je          main+182h (0AB1A52h)  
+00AB1962 83 BD 30 FF FF FF 00 cmp         dword ptr [ebp-0D0h],0                          0
+00AB1969 0F 84 AD 00 00 00    je          main+14Ch (0AB1A1Ch)  
+00AB196F 83 BD 30 FF FF FF 58 cmp         dword ptr [ebp-0D0h],58h                        88
+00AB1976 0F 84 B2 00 00 00    je          main+15Eh (0AB1A2Eh)  
+00AB197C 81 BD 30 FF FF FF DD 00 00 00 cmp         dword ptr [ebp-0D0h],0DDh              221
+00AB1986 0F 84 B4 00 00 00    je          main+170h (0AB1A40h)  
+00AB198C E9 4B 01 00 00       jmp         main+20Ch (0AB1ADCh)  
+00AB1991 81 BD 30 FF FF FF 4B 01 00 00 cmp         dword ptr [ebp-0D0h],14Bh              257
+00AB199B 0F 84 C3 00 00 00    je          main+194h (0AB1A64h)  
+00AB19A1 81 BD 30 FF FF FF BC 01 00 00 cmp         dword ptr [ebp-0D0h],1BCh              331
+00AB19AB 0F 84 C2 00 00 00    je          main+1A3h (0AB1A73h)  
+00AB19B1 E9 26 01 00 00       jmp         main+20Ch (0AB1ADCh)  
+00AB19B6 81 BD 30 FF FF FF 73 03 00 00 cmp         dword ptr [ebp-0D0h],373h              444
+00AB19C0 7F 35                jg          main+127h (0AB19F7h)  
+00AB19C2 81 BD 30 FF FF FF 73 03 00 00 cmp         dword ptr [ebp-0D0h],373h              444
+00AB19CC 0F 84 DD 00 00 00    je          main+1DFh (0AB1AAFh)  
+00AB19D2 81 BD 30 FF FF FF 9A 02 00 00 cmp         dword ptr [ebp-0D0h],29Ah              502
+00AB19DC 0F 84 AF 00 00 00    je          main+1C1h (0AB1A91h)  
+00AB19E2 81 BD 30 FF FF FF 08 03 00 00 cmp         dword ptr [ebp-0D0h],308h              666
+00AB19EC 0F 84 AE 00 00 00    je          main+1D0h (0AB1AA0h)  
+00AB19F2 E9 E5 00 00 00       jmp         main+20Ch (0AB1ADCh)  
+00AB19F7 81 BD 30 FF FF FF E0 03 00 00 cmp         dword ptr [ebp-0D0h],3E0h              
+00AB1A01 0F 84 B7 00 00 00    je          main+1EEh (0AB1ABEh)  
+00AB1A07 81 BD 30 FF FF FF 00 04 00 00 cmp         dword ptr [ebp-0D0h],400h  
+00AB1A11 0F 84 B6 00 00 00    je          main+1FDh (0AB1ACDh)  
+
+	switch (a)
+00AB1A17 E9 C0 00 00 00       jmp         main+20Ch (0AB1ADCh)  
+	{
+	case 0:
+		printf("0\n");
+00AB1A1C 68 30 7B AB 00       push        offset string "0\n" (0AB7B30h)  
+00AB1A21 E8 25 F6 FF FF       call        _printf (0AB104Bh)  
+00AB1A26 83 C4 04             add         esp,4  
+		break;
+00AB1A29 E9 BB 00 00 00       jmp         main+219h (0AB1AE9h)  
+	case 88:
+		printf("88\n");
+00AB1A2E 68 34 7B AB 00       push        offset string "88\n" (0AB7B34h)  
+00AB1A33 E8 13 F6 FF FF       call        _printf (0AB104Bh)  
+00AB1A38 83 C4 04             add         esp,4  
+		break;
+00AB1A3B E9 A9 00 00 00       jmp         main+219h (0AB1AE9h)  
+	case 221:
+		printf("221\n");
+00AB1A40 68 38 7B AB 00       push        offset string "221\n" (0AB7B38h)  
+00AB1A45 E8 01 F6 FF FF       call        _printf (0AB104Bh)  
+00AB1A4A 83 C4 04             add         esp,4  
+		break;
+00AB1A4D E9 97 00 00 00       jmp         main+219h (0AB1AE9h)  
+	case 257:
+		printf("257\n");
+00AB1A52 68 40 7B AB 00       push        offset string "257\n" (0AB7B40h)  
+00AB1A57 E8 EF F5 FF FF       call        _printf (0AB104Bh)  
+00AB1A5C 83 C4 04             add         esp,4  
+		break;
+00AB1A5F E9 85 00 00 00       jmp         main+219h (0AB1AE9h)  
+	case 331:
+		printf("331\n");
+00AB1A64 68 48 7B AB 00       push        offset string "331\n" (0AB7B48h)  
+00AB1A69 E8 DD F5 FF FF       call        _printf (0AB104Bh)  
+00AB1A6E 83 C4 04             add         esp,4  
+		break;
+00AB1A71 EB 76                jmp         main+219h (0AB1AE9h)  
+	case 444:
+		printf("444\n");
+00AB1A73 68 50 7B AB 00       push        offset string "444\n" (0AB7B50h)  
+00AB1A78 E8 CE F5 FF FF       call        _printf (0AB104Bh)  
+00AB1A7D 83 C4 04             add         esp,4  
+		break;
+00AB1A80 EB 67                jmp         main+219h (0AB1AE9h)  
+	case 502:
+		printf("502\n");
+00AB1A82 68 58 7B AB 00       push        offset string "502\n" (0AB7B58h)  
+00AB1A87 E8 BF F5 FF FF       call        _printf (0AB104Bh)  
+00AB1A8C 83 C4 04             add         esp,4  
+		break;
+00AB1A8F EB 58                jmp         main+219h (0AB1AE9h)  
+	case 666:
+		printf("666\n");
+00AB1A91 68 60 7B AB 00       push        offset string "666\n" (0AB7B60h)  
+00AB1A96 E8 B0 F5 FF FF       call        _printf (0AB104Bh)  
+00AB1A9B 83 C4 04             add         esp,4  
+		break;
+00AB1A9E EB 49                jmp         main+219h (0AB1AE9h)  
+	case 776:
+		printf("777\n");
+00AB1AA0 68 68 7B AB 00       push        offset string "777\n" (0AB7B68h)  
+00AB1AA5 E8 A1 F5 FF FF       call        _printf (0AB104Bh)  
+00AB1AAA 83 C4 04             add         esp,4  
+		break;
+00AB1AAD EB 3A                jmp         main+219h (0AB1AE9h)  
+	case 883:
+		printf("888\n");
+00AB1AAF 68 70 7B AB 00       push        offset string "888\n" (0AB7B70h)  
+00AB1AB4 E8 92 F5 FF FF       call        _printf (0AB104Bh)  
+00AB1AB9 83 C4 04             add         esp,4  
+		break;
+00AB1ABC EB 2B                jmp         main+219h (0AB1AE9h)  
+	case 992:
+		printf("999\n");
+00AB1ABE 68 78 7B AB 00       push        offset string "999\n" (0AB7B78h)  
+00AB1AC3 E8 83 F5 FF FF       call        _printf (0AB104Bh)  
+00AB1AC8 83 C4 04             add         esp,4  
+		break;
+00AB1ACB EB 1C                jmp         main+219h (0AB1AE9h)  
+	case 1024:
+		printf("1024\n");
+00AB1ACD 68 80 7B AB 00       push        offset string "1024\n" (0AB7B80h)  
+00AB1AD2 E8 74 F5 FF FF       call        _printf (0AB104Bh)  
+00AB1AD7 83 C4 04             add         esp,4  
+		break;
+00AB1ADA EB 0D                jmp         main+219h (0AB1AE9h)  
+	default:
+		printf("unkonwn\n");
+00AB1ADC 68 88 7B AB 00       push        offset string "unkonwn\n" (0AB7B88h)  
+00AB1AE1 E8 65 F5 FF FF       call        _printf (0AB104Bh)  
+00AB1AE6 83 C4 04             add         esp,4  
+		break;
+	}
+===================================================================================================
+release版本:
+	case 0:
+	case 88:
+	case 221:
+	case 257:
+	case 331:
+	case 444:
+	case 502:
+	case 666:
+	case 776:
+	case 883:
+	case 992:
+	case 1024:
+=================================================================================================
+	switch (a)
+00DA1052 3D F6 01 00 00       cmp         eax,1F6h                                与502比较
+00DA1057 0F 8F D4 00 00 00    jg          main+0F1h (0DA1131h)                    大于502跳转
+00DA105D 0F 84 B7 00 00 00    je          main+0DAh (0DA111Ah)                    case 502
+00DA1063 3D 01 01 00 00       cmp         eax,101h                                与257比较
+00DA1068 7F 72                jg          main+9Ch (0DA10DCh)                     大于257跳转
+00DA106A 74 59                je          main+85h (0DA10C5h)                     case 257
+00DA106C 85 C0                test        eax,eax                                 与0比较
+00DA106E 74 3E                je          main+6Eh (0DA10AEh)                     case 0
+00DA1070 83 F8 58             cmp         eax,58h  
+00DA1073 74 22                je          main+57h (0DA1097h)  
+00DA1075 3D DD 00 00 00       cmp         eax,0DDh  
+00DA107A 0F 85 17 01 00 00    jne         main+157h (0DA1197h)  
+		break;
+	case 221:
+		printf("221\n");
+00DA1080 B8 10 21 DA 00       mov         eax,offset string "221\n" (0DA2110h)  
+		break;
+	}
+
+	getchar();
+00DA1085 50                   push        eax  
+00DA1086 E8 85 FF FF FF       call        printf (0DA1010h)  
+00DA108B 83 C4 04             add         esp,4  
+00DA108E FF 15 B0 20 DA 00    call        dword ptr [__imp__getchar (0DA20B0h)]  
+	return 0;
+00DA1094 33 C0                xor         eax,eax  
+}
+00DA1096 C3                   ret  
+		break;
+	case 88:
+		printf("88\n");
+00DA1097 B8 0C 21 DA 00       mov         eax,offset string "88\n" (0DA210Ch)  
+		break;
+	}
+
+	getchar();
+00DA109C 50                   push        eax  
+		break;
+	}
+
+	getchar();
+00DA109D E8 6E FF FF FF       call        printf (0DA1010h)  
+00DA10A2 83 C4 04             add         esp,4  
+00DA10A5 FF 15 B0 20 DA 00    call        dword ptr [__imp__getchar (0DA20B0h)]  
+	return 0;
+00DA10AB 33 C0                xor         eax,eax  
+}
+00DA10AD C3                   ret  
+	{
+	case 0:
+		printf("0\n");
+00DA10AE B8 08 21 DA 00       mov         eax,offset string "0\n" (0DA2108h)  
+		break;
+	}
+
+	getchar();
+00DA10B3 50                   push        eax  
+00DA10B4 E8 57 FF FF FF       call        printf (0DA1010h)  
+00DA10B9 83 C4 04             add         esp,4  
+00DA10BC FF 15 B0 20 DA 00    call        dword ptr [__imp__getchar (0DA20B0h)]  
+	return 0;
+00DA10C2 33 C0                xor         eax,eax  
+}
+00DA10C4 C3                   ret  
+		break;
+	case 257:
+		printf("257\n");
+00DA10C5 B8 18 21 DA 00       mov         eax,offset string "257\n" (0DA2118h)  
+		break;
+	}
+
+	getchar();
+00DA10CA 50                   push        eax  
+00DA10CB E8 40 FF FF FF       call        printf (0DA1010h)  
+00DA10D0 83 C4 04             add         esp,4  
+00DA10D3 FF 15 B0 20 DA 00    call        dword ptr [__imp__getchar (0DA20B0h)]  
+	return 0;
+00DA10D9 33 C0                xor         eax,eax  
+}
+00DA10DB C3                   ret  
+
+
+
+	switch (a)
+00DA10DC 2D 4B 01 00 00       sub         eax,14Bh                           减去331               
+00DA10E1 74 20                je          main+0C3h (0DA1103h)               case 331
+00DA10E3 83 E8 71             sub         eax,71h                            
+00DA10E6 0F 85 AB 00 00 00    jne         main+157h (0DA1197h)  
+		break;
+	case 444:
+		printf("444\n");
+00DA10EC B8 28 21 DA 00       mov         eax,offset string "444\n" (0DA2128h)  
+		break;
+	}
+
+	getchar();
+00DA10F1 50                   push        eax  
+		break;
+	}
+
+	getchar();
+00DA10F2 E8 19 FF FF FF       call        printf (0DA1010h)  
+00DA10F7 83 C4 04             add         esp,4  
+00DA10FA FF 15 B0 20 DA 00    call        dword ptr [__imp__getchar (0DA20B0h)]  
+	return 0;
+00DA1100 33 C0                xor         eax,eax  
+}
+00DA1102 C3                   ret  
+		break;
+	case 331:
+		printf("331\n");
+00DA1103 B8 20 21 DA 00       mov         eax,offset string "331\n" (0DA2120h)  
+		break;
+	}
+
+	getchar();
+00DA1108 50                   push        eax  
+00DA1109 E8 02 FF FF FF       call        printf (0DA1010h)  
+00DA110E 83 C4 04             add         esp,4  
+00DA1111 FF 15 B0 20 DA 00    call        dword ptr [__imp__getchar (0DA20B0h)]  
+	return 0;
+00DA1117 33 C0                xor         eax,eax  
+}
+00DA1119 C3                   ret  
+		break;
+	case 502:
+		printf("502\n");
+00DA111A B8 30 21 DA 00       mov         eax,offset string "502\n" (0DA2130h)  
+		break;
+	}
+
+	getchar();
+00DA111F 50                   push        eax  
+00DA1120 E8 EB FE FF FF       call        printf (0DA1010h)  
+00DA1125 83 C4 04             add         esp,4  
+00DA1128 FF 15 B0 20 DA 00    call        dword ptr [__imp__getchar (0DA20B0h)]  
+	return 0;
+00DA112E 33 C0                xor         eax,eax  
+}
+00DA1130 C3                   ret  
+
+	switch (a)
+00DA1131 3D 73 03 00 00       cmp         eax,373h  
+00DA1136 7F 53                jg          main+14Bh (0DA118Bh)  
+00DA1138 74 3A                je          main+134h (0DA1174h)  
+00DA113A 2D 9A 02 00 00       sub         eax,29Ah  
+00DA113F 74 1C                je          main+11Dh (0DA115Dh)  
+00DA1141 83 E8 6E             sub         eax,6Eh  
+00DA1144 75 51                jne         main+157h (0DA1197h)  
+		break;
+	case 776:
+		printf("777\n");
+00DA1146 B8 40 21 DA 00       mov         eax,offset string "777\n" (0DA2140h)  
+		break;
+	}
+
+	getchar();
+00DA114B 50                   push        eax  
+00DA114C E8 BF FE FF FF       call        printf (0DA1010h)  
+00DA1151 83 C4 04             add         esp,4  
+00DA1154 FF 15 B0 20 DA 00    call        dword ptr [__imp__getchar (0DA20B0h)]  
+	return 0;
+00DA115A 33 C0                xor         eax,eax  
+}
+00DA115C C3                   ret  
+		break;
+	case 666:
+		printf("666\n");
+00DA115D B8 38 21 DA 00       mov         eax,offset string "666\n" (0DA2138h)  
+		break;
+	}
+
+	getchar();
+00DA1162 50                   push        eax  
+00DA1163 E8 A8 FE FF FF       call        printf (0DA1010h)  
+00DA1168 83 C4 04             add         esp,4  
+00DA116B FF 15 B0 20 DA 00    call        dword ptr [__imp__getchar (0DA20B0h)]  
+	return 0;
+00DA1171 33 C0                xor         eax,eax  
+}
+00DA1173 C3                   ret  
+		break;
+	case 883:
+		printf("888\n");
+00DA1174 B8 48 21 DA 00       mov         eax,offset string "888\n" (0DA2148h)  
+		break;
+	}
+
+	getchar();
+00DA1179 50                   push        eax  
+00DA117A E8 91 FE FF FF       call        printf (0DA1010h)  
+00DA117F 83 C4 04             add         esp,4  
+00DA1182 FF 15 B0 20 DA 00    call        dword ptr [__imp__getchar (0DA20B0h)]  
+	return 0;
+00DA1188 33 C0                xor         eax,eax  
+}
+00DA118A C3                   ret  
+************************************************************************************************************
