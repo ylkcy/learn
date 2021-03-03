@@ -1,0 +1,57 @@
+********************************************************************************************************
+Array debug
+0x00BD64B8  00 00 00 00  ....        0
+0x00BD64BC  01 00 00 00  ....
+0x00BD64C0  02 00 00 00  ....
+0x00BD64C4  03 00 00 00  ....
+0x00BD64C8  04 00 00 00  ....
+0x00BD64CC  05 00 00 00  ....
+0x00BD64D0  06 00 00 00  ....
+0x00BD64D4  07 00 00 00  ....
+..........
+0x00C37F68  f6 9e d1 fa  ????        99999
+
+
+	for(int i = 0; i < 100000; i++)	
+00115592 C7 45 80 00 00 00 00 mov         dword ptr [ebp-80h],0               初值
+00115599 EB 09                jmp         main+0E4h (01155A4h)                跳转到条件比较
+0011559B 8B 45 80             mov         eax,dword ptr [ebp-80h]            
+0011559E 83 C0 01             add         eax,1                               步长
+001155A1 89 45 80             mov         dword ptr [ebp-80h],eax  
+001155A4 81 7D 80 A0 86 01 00 cmp         dword ptr [ebp-80h],186A0h          条件比较
+001155AB 7D 11                jge         main+0FEh (01155BEh)                大于跳转到结束
+	{
+		sum1 += pAry[i];
+001155AD 8B 45 80             mov         eax,dword ptr [ebp-80h]  
+	{
+		sum1 += pAry[i];
+001155B0 8B 4D E8             mov         ecx,dword ptr [pAry]                
+001155B3 8B 55 98             mov         edx,dword ptr [sum1]               
+001155B6 03 14 81             add         edx,dword ptr [ecx+eax*4]          数组寻址方式
+001155B9 89 55 98             mov         dword ptr [sum1],edx  
+	}
+001155BC EB DD                jmp         main+0DBh (011559Bh) 
+**********************************************************************************************************
+vector debug
+	for(int i = 0; i < 100000; i++)
+001155BE C7 85 74 FF FF FF 00 00 00 00 mov         dword ptr [ebp-8Ch],0  
+001155C8 EB 0F                jmp         main+119h (01155D9h)  
+001155CA 8B 85 74 FF FF FF    mov         eax,dword ptr [ebp-8Ch]  
+001155D0 83 C0 01             add         eax,1  
+001155D3 89 85 74 FF FF FF    mov         dword ptr [ebp-8Ch],eax  
+001155D9 81 BD 74 FF FF FF A0 86 01 00 cmp         dword ptr [ebp-8Ch],186A0h  
+001155E3 7D 19                jge         main+13Eh (01155FEh)  
+	{
+		sum2 += vec[i];
+001155E5 8B 85 74 FF FF FF    mov         eax,dword ptr [ebp-8Ch]  
+	{
+		sum2 += vec[i];
+001155EB 50                   push        eax                                                                 vec下标index
+001155EC 8D 4D D0             lea         ecx,[vec]                                                           this指针                      
+001155EF E8 6E BC FF FF       call        std::vector<int,std::allocator<int> >::operator[] (0111262h)        调用operator[]，返回值放在eax
+001155F4 8B 4D 8C             mov         ecx,dword ptr [sum2]                                                将sum2的值放入到寄存器ecx
+001155F7 03 08                add         ecx,dword ptr [eax]                                                 sum2 + operator[this, index]
+001155F9 89 4D 8C             mov         dword ptr [sum2],ecx  
+	}
+001155FC EB CC                jmp         main+10Ah (01155CAh)                                                跳转到步长比较
+**********************************************************************************************************
