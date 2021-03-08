@@ -1,5 +1,5 @@
 
-#include "ring_buffer.h"
+#include "single_thread_ring_buffer.h"
 #include <pthread.h>
 #include <time.h>
 
