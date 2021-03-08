@@ -55,3 +55,27 @@ vector debug
 	}
 001155FC EB CC                jmp         main+10Ah (01155CAh)                                                跳转到步长比较
 **********************************************************************************************************
+VS2017 Release 版本一样 实际时间未测试  但gcc 4.8.5 vector效率优于array
+	for(int i = 0; i < 100000; i++)	
+	{
+		sum1 += pAry[i];
+001310E0 0F 10 04 87          movups      xmm0,xmmword ptr [edi+eax*4]  
+001310E4 66 0F FE D0          paddd       xmm2,xmm0  
+001310E8 0F 10 44 87 10       movups      xmm0,xmmword ptr [edi+eax*4+10h]  
+001310ED 83 C0 08             add         eax,8  
+001310F0 66 0F FE D8          paddd       xmm3,xmm0  
+001310F4 3D A0 86 01 00       cmp         eax,186A0h  
+001310F9 7C E5                jl          main+0A0h (01310E0h)  
+	}
+
+	{
+		sum2 += vec[i];
+00131123 0F 10 04 87          movups      xmm0,xmmword ptr [edi+eax*4]  
+00131127 66 0F FE C8          paddd       xmm1,xmm0  
+0013112B 0F 10 44 87 10       movups      xmm0,xmmword ptr [edi+eax*4+10h]  
+00131130 83 C0 08             add         eax,8  
+00131133 66 0F FE D0          paddd       xmm2,xmm0  
+00131137 3D A0 86 01 00       cmp         eax,186A0h  
+0013113C 7C E5                jl          main+0E3h (0131123h)  
+	}
+*********************************************************************************************************
