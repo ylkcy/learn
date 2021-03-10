@@ -82,24 +82,27 @@ public:
         _end_pos = 0;
     }
 
+    //用于回滚操作
     inline void unpush()
     {
+        //没有跨trunk,即_back_pos!=0
         if (_back_pos)
         {
             --_back_pos;
         }
         else 
-        {
+        {//跨trunk 指向前一个trunk块, 设置为上一个trunk块的满位置
             _back_pos = N - 1;
             _back_chunk = _back_chunk->prev;
         }
 
+        //_end_pos始终记录_back_pos下一次待写入的位置
         if (_end_pos)
         {
             --_end_pos;
         } 
         else 
-        {
+        {//跨trunk 指向前一个trunk块, 设置为上一个trunk块的满位置
             _end_pos = N - 1;
             _end_chunk = _end_chunk->prev;
             free (_end_chunk->next);
