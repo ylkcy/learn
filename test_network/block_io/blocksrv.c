@@ -62,9 +62,11 @@ int main(int argc, char *argv[])
     }
 
     int opt = 1;  
-    //需要端口复用的套接字 TIME_WAIT 
+    //需要地址复用的套接字 TIME_WAIT ，socket关闭后，会进入time_wait状态
+	//重新绑定时会出现失败 错误信息为bind: Address already in use
+	//使用netstat -ano | grep 6666查找端口状态
+	//tcp  0  0 127.0.0.1:6666  127.0.0.1:35268  TIME_WAIT timewait(32.62 / 0 / 0)
     //setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR, (const void *)&opt, sizeof(opt));
-
     struct sockaddr_in addr;
     memset(&addr, 0, sizeof(struct sockaddr_in));
 
