@@ -1,0 +1,315 @@
+smail语法：
+无论是普通类, 抽象类, 接口类或者内部类，反编译的代码中，都会以单独的smail文件存放
+
+Dalvik是google专门为Android操作系统设计的一个虚拟机，经过深度的优化。虽然Android上的程序是使用java来开发的，但是Dalvik和标准的java虚拟机JVM还是两回事。
+Dalvik VM是基于寄存器的，而JVM是基于栈的；Dalvik有专属的文件执行格式dex（dalvik executable），
+而JVM则执行的是java字节码。Dalvik VM比JVM速度更快，占用空间更少。
+
+类名须符合Dalvik字节码的约定, L开头 将'.'替换为'/'
+'#'代表注释
+
+1. 类的主体信息
+.class <访问权限(public private protocted)> [关键修饰字] <完整类名(包名+类名)>
+.super <父类名>
+.source <源文件名>
+
+2. 接口
+.implements 类名$方法名;
+
+数据类型
+V void 
+Z boolean
+B byte
+S short
+I int
+C char
+F float
+D double
+J long
+
+对象数据类型
+L开头 将'.'替换为'/'
+
+类成员变量表示：
+<对象类型>;-><成员名>:<成员类型>;
+类成员方法表示:
+<对象类型>;-><成员方法>(<参数类型>...)<返回类型>
+
+数组类型
+[ 一维
+[[ 二维
+
+寄存器与变量
+android变量都是存放在寄存器中, 寄存器为32位, 可以支持任何类型, 其中long和double为64位, 需要使用两个寄存器保存(vx, vx+1)
+寄存器使用v和p命名，v表示本地寄存器，p代表参数寄存器
+
+private void print(String string) {
+    Log.d(TAG, string);
+}
+
+.method private print(Ljava/lang/String;)V
+    .registers 3
+    .param p1, "string"    # Ljava/lang/String;
+
+    .prologue
+    .line 29
+    const-string v0, "MainActivity"
+
+    invoke-static {v0, p1}, Landroid/util/Log;->d(Ljava/lang/String;Ljava/lang/String;)I
+
+    .line 30
+    return-void
+.end method
+.registers 表示方法使用3个寄存器，但上面只能看到参数寄存器p1和本地寄存器v0，其中存在p0存储的this
+ex：
+invoke-direct {p0, v0}, Ltestdemo/hpp/cn/annotationtest/MainActivity;->print(Ljava/lang/String;)V ==》this->print(v0)
+
+基本指令
+move v0,v3  //v0 = v3
+const-string v0, "Hello Smail" v0 = "Hello Smail"
+const[/4,/8,/16] vx,lit32 存入4,8,16,32位常量到vx 
+const-wide vx,lit64 存入64位常量到vx,vx+1寄存器
+const-class vx, 类型ID 存入类对象常量到vx, 通过类型ID或类型
+
+monitor-enter vx 获得vx寄存器中的对象引用的监视器
+monitor-exit 释放vx寄存器中的对象引用的监视器
+
+check-cast vx, 类型ID 检查vx寄存器中的对象引用是否可以转换成类型ID对应类型的实例。不可转换，抛出ClassCastException异常，否则继续执行
+instance-of vx, vy, 类型ID 检查vy寄存器中引用的对象是否是类型ID对应类型的实例，是vx存入非0值，否则存入0
+
+array-length vx,vy 计算vy寄存器中数组引用的元素长度并将长度存入vx
+new-instance vx,类型ID 根据类型ID或类型新建一个对象实例，将新建的对象的引用存入vx
+new-array vx,vy,类型ID 根据类型ID或类型新建一个数组，vy存入数组的长度，vx存入数组的引用
+field-new-array{参数}, 类型ID 根据类型ID或类型新建一个数组并通过参数填充
+field-new-array {v0,v0},[I 新建一个int数组，长度将为2, 并且2个元素将填充到v0寄存器。
+field-new-array-range {v0, v1, v2, ..., vn} 类型ID 新建一个byte（类型ID 表#6 条目）数组，长度将为3 并且3 个元素将填充到v19,v20,v21
+fill-array-data vx,offset 用vx的静态数据填充数组引用。静态数据的位址是当前指令位置+offset的和
+throw vx 抛出异常对象，异常对象的引用在vx寄存器中
+goto 无条件跳转
+
+
+invoke-super 调用父类的方法
+invoke-static 调用静态方法
+invoke-direct 调用方法
+invoke-interface 调用接口
+invoke-virtual 调用虚方法
+
+
+return-void 函数返回void
+new-instance 创建实例
+基本数据类型读取的指令有：iget、sget、iget-boolean、sget-boolean、aget
+对象数据类型读取指令: iget-object、sget-object aget-object
+赋值的指令有：iput、sput、iput-boolean、sput-boolean aput
+对象数据赋值的指令: iput-object、sput-object aput-object
+
+条件判断
+if-eq vA, VB, cond_** 如果vA等于vB则跳转到cond_**。相当于if (vA==vB)                
+if-ne vA, VB, cond_** 如果vA不等于vB则跳转到cond_**。相当于if (vA!=vB)              
+if-lt vA, VB, cond_** 如果vA小于vB则跳转到cond_**。相当于if (vA<vB)                 
+if-le vA, VB, cond_** 如果vA小于等于vB则跳转到cond_**。相当于if (vA<=vB)            
+if-gt vA, VB, cond_** 如果vA大于vB则跳转到cond_**。相当于if (vA>vB)
+if-ge vA, VB, cond_** 如果vA大于等于vB则跳转到cond_**。相当于if (vA>=vB)
+
+if-eqz vA, :cond_** 如果vA等于0则跳转到:cond_** 相当于if (VA==0)         
+if-nez vA, :cond_** 如果vA不等于0则跳转到:cond_**相当于if (VA!=0)
+if-ltz vA, :cond_** 如果vA小于0则跳转到:cond_**相当于if (VA<0)
+if-lez vA, :cond_** 如果vA小于等于0则跳转到:cond_**相当于if (VA<=0)
+if-gtz vA, :cond_** 如果vA大于0则跳转到:cond_**相当于if (VA>0)
+if-gez vA, :cond_** 如果vA大于等于0则跳转到:cond_**相当于if (VA>=0)
+
+cmpl-float vx, vy, vz 比较v6和v7的float值并在v0存入int型返回值。非数值默认为小于。如果参数为非数值将返回-1。
+cmpg-float vx, vy, vz 比较v6和v7的float值并在v0存入int型返回值。非数值默认为大于。如果参数为非数值将返回1。
+cmpl-double vx, vy, vz  比较v6,v7 和v8,v9 的double值并在v25存入int 型返回值。非数值默认为小于。如果参数为非数值将返回-1。(64位需要两个寄存器存储)
+cmpg-double vx, vy, vz  比较v6,v7 和v8,v9 的double值并在v25存入int 型返回值。非数值默认为小于。如果参数为非数值将返回1。(64位需要两个寄存器存储)
+cmp-long vx, vy, vz 
+
+
+循环
+迭代器循环，for循环，do while循环 
+
+swtich分支语句
+packed-switch vx, 索引表偏移量  
+实现一个switch语句，case常量是连续的。这个指令使用索引表, vx是在表中找到具体case的指令偏移量的索引, 如果无法在表中找到vx对应的索引将继续执行下一个指令(default case)
+packed-switch v2, 000c // +000c
+根据v2寄存器中的值执行packed switch, 索引表的位置是当前指令位置+0CH，表如下所示：
+0001 // 表类型：packed switch 表
+0300 // 元素个数
+0000 0000 // 基础元素
+0500 0000 0: 00000005 // case 0: +00000005
+0700 0000 1: 00000007 // case 1: +00000007
+0900 0000 2: 00000009 // case 2: +00000009
+
+sparse-switch vx, 查询表偏移量 
+实现一个switch语句，case常量是非连续的。这个指令使用查询表, 用于表示case常量和每个case常量的偏移量。如果vx无法在表中匹配将继续执行下一个指令(即default case)
+sparse-switch v2, 000c // +000c
+根据v2寄存器中的值执行sparse switch, 查询表的位置是当前指令位置+0CH，表如下所示：
+0002 // 表类型：sparse switch 表
+0300 // 元素个数
+9cff ffff // 第一个case 常量: -100
+fa00 0000 // 第二个case 常量: 250
+e803 0000 // 第三个case 常量: 1000
+0500 0000 // 第一个case 常量的偏移量: +5
+0700 0000 // 第二个case 常量的偏移量: +7
+0900 0000 // 第三个case 常量的偏移量: +9
+
+try/catch语句
+
+字段
+静态字段 .field <访问权限> static [修饰关键字] <字段名>:<字段类型>
+实例字段 .field <访问权限> [修饰关键字] <字段名>:<字段类型>
+
+方法：
+.method <访问权限> [修饰关键字] <函数名称>(<参数类型1><参数类型2>...)<返回值类型>
+.end method
+
+直接方法
+#direct methods
+.method <访问权限> [修饰关键字] <方法原型>
+    <.registers>
+    [.param]
+    [.prologue]
+    [.line]
+    <.local>
+    <代码体>
+.end method
+
+private void print(String string) {
+    Log.d(TAG, string);
+}
+
+.method private print(Ljava/lang/String;)V
+    .registers 3
+    .param p1, "string"    # Ljava/lang/String;
+
+    .prologue
+    .line 29
+    const-string v0, "MainActivity"
+
+    invoke-static {v0, p1}, Landroid/util/Log;->d(Ljava/lang/String;Ljava/lang/String;)I
+
+    .line 30
+    return-void
+.end method
+
+#direct methods是注释，是baksmali添加的，访问权限和修饰关键字跟字段是一样的。
+方法原型描述了方法的名称、参数与返回值。
+.registers 指令指定了方法中寄存器的总数,这个数量是参数和本地变量总和。
+.local 使用这个指定表明方法中非参寄存器
+.param表明了方法的参数，每个.param指令表示一个参数，方法使用了几个参数就有几个.parameter指令。
+.prologue指定了代码的开始处，混淆过的代码可能去掉了该指令。
+.line指明了该处代码在源代码中的行号，同样，混淆后的代码可能去掉了行号。
+
+虚方法
+@Override
+public void onClick(View view) {
+    String str = "Hello World!";
+    print(str);
+}
+
+# virtual methods
+.method public onClick(Landroid/view/View;)V
+    .registers 3
+    .param p1, "view"    # Landroid/view/View;
+
+    .prologue
+    .line 24
+    const-string v0, "Hello World!"
+
+    .line 25
+    .local v0, "str":Ljava/lang/String;
+    invoke-direct {p0, v0}, Ltestdemo/hpp/cn/annotationtest/MainActivity;->print(Ljava/lang/String;)V
+
+    .line 26
+    return-void
+.end method
+
+静态方法
+public static void setTag(String str) {
+    TAG = str;
+}
+
+.method public static setTag(Ljava/lang/String;)V
+    .registers 1
+    .param p0, "str"    # Ljava/lang/String;
+
+    .prologue
+    .line 64
+    sput-object p0, Ltestdemo/hpp/cn/annotationtest/MainActivity;->TAG:Ljava/lang/String;
+
+    .line 65
+    return-void
+.end method
+
+方法的返回结果
+返回值为基本数据类型
+move-result
+返回值为对象类型
+move-result-object 
+
+注解：
+#annotations
+.annotation [注解属性] <注解类名>
+    [注解字段 = 值]
+.end annotation
+
+注解类
+@BindInt(100)
+public class MainActivity extends AppCompatActivity {
+
+}
+
+# annotations
+.annotation build Ltestdemo/hpp/cn/annotationtest/BindInt;
+    value = 0x64
+.end annotation
+
+注解字段
+@BindView(R.id.button)
+public Button mButton;
+
+# instance fields
+.field public mButton:Landroid/widget/Button;
+    .annotation build Lbutterknife/BindView;
+        value = 0x7f0c0050
+    .end annotation
+.end field
+
+注解方法
+@OnClick(R.id.button)
+public void click() {
+    String str = "Hello World!";
+    print(str);
+}
+
+# virtual methods
+.method public click()V
+    .registers 2
+    .annotation build Lbutterknife/OnClick;
+        value = {
+            0x7f0c0050
+        }
+    .end annotation
+
+    .prologue
+    .line 29
+    const-string v0, "Hello World!"
+
+    .line 30
+    .local v0, "str":Ljava/lang/String;
+    invoke-direct {p0, v0}, Ltestdemo/hpp/cn/annotationtest/MainActivity;->print(Ljava/lang/String;)V
+
+    .line 31
+    return-void
+.end method
+
+smail插装：修改smail文件后在重新打包签名
+
+
+
+
+
+
+
+
+
+
