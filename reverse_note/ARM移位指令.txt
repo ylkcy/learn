@@ -1,0 +1,25 @@
+移位指令
+LSL (logical shift left)
+LSR (logical shift right)
+ASL (Arithmetic shift left)
+ASR (Arithmetic shift right)
+ROR (Rotate Right)
+RRX (Rotate Right with extend)
+
+
+逻辑左移(Logical Shift Left)
+不考虑符号位, 左移, 低位补0 
+
+逻辑右移(Logical Shift Right)
+不考虑符号位, 右移, 高位补0
+
+算术左移(Arithmetic Shift Left)
+考虑符号位, 左移, 低位补符号位
+
+算术右移(Arithmetic Shift Right)
+考虑符号位, 右移, 高位补符号位
+
+循环右移(Rotate Right)
+将移出的低位放到该数的高位
+
+带扩展的循环右移(Rotate Right with extend)
