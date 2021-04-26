@@ -1,0 +1,79 @@
+浮点指令
+基本的浮点指令
+指令名称    指令格式        指令功能
+FLD         FLD IN          将浮点数IN压入栈中
+FILD        FILD IN         将整数IN压入到栈中
+FLDZ        FLDZ            将0.0压入到栈中
+FLD1        FLD1            将1.0压入到栈中
+FSTP        FST OUT         ST(0)中的数据以浮点形式存入OUT地址中。
+FSTP        FSTP OUT        和FST指令一样，但会执行一次出栈操作。
+FIST        FITP OUT        ST(0)数据以整数形式存入OUT地址。
+FISTP       FISTP OUT       和FIST指令一样，但会执行一次出栈操作。
+FCOM        FCOM IN         将IN地址数据与ST(0)进行实数比较，影响对应标记。
+FTST        FTST            比较ST(0)是否为0.0，影响对应标记位。
+FADD        FADD IN         将IN地址内的数据与ST(0)做加法运算，结果放入ST(0)中。
+FADDP       FADDP ST(N), ST 将ST(N)中的数据与ST(0)中的数据做加法运算，N为0~7中的任意一个，先执行一次出栈操作，然后将相加结果放入ST(0)中保存。
+
+int转float发生了什么？
+
+vc6.0:
+float fFloat = (float)argc;//argc为命令行参数，类型int
+//对应的反汇编语句
+fild dword ptr [ebp+8]//将地址ebp+8处的整形数据转换成浮点型，并放入ST(0),对应变量argc
+fst dword ptr [ebp-4]//从ST(0)中取出数据以浮点编码方式放入ebp-4,对应变量fFloat
+
+vs2017:
+cvtsi2ss    xmm0,dword ptr [argc] 
+movss       dword ptr [f],xmm0 
+cvtss2sd    xmm0,dword ptr [f]
+
+cvtsi2ss XMM,r32/m32
+源存储器1个32位有符号(补码)整数转为1个单精度浮点数,放入目的寄存器低32中,高96位不变.
+
+
+float做参数发生了什么？
+
+vc6.0:
+printf("%f",fFloat);
+//对应的反汇编代码
+sub esp,8            //准备8个字节的栈空间，以便于存放double数据(浮点数做变参函数的参数需要转换为double型)
+fstp dword ptr [esp]  //将ST(0)中的数据传入esp中，并弹出ST(0)
+push offset string "%f"
+call printf (0040e940)
+add  esp,0ch
+
+vs2017:
+sub         esp,8  
+movsd       mmword ptr [esp],xmm0                    //XMM0?=?006F0056006B0073-3FF0000000000000 0011 1111 1111 000000000000000...
+push        offset string "%f\r\n" (0847B30h)  
+call        _printf (084104Bh) 
+add         esp,0Ch  
+
+float类型的浮点数虽然占4个字节，但都是以8个字节的方式处理。当浮点数做参数时，并不能直接压栈，
+因为PUSH指令只能传入4个字节的数据到栈中，这样就会丢失4字节数据。这就是为什么printf函数以整数方式输出浮点数会出错的原因。
+	float f = 1.0f;
+	printf("%d\r\n", f);
+    result : 0
+printf函数以整数方式输出时，将对应参数作为4字节数据，按补码方式解释，而真正压入的参数为浮点类型，数据长度为8个字节。
+
+float类型转换成int类型时发生了什么？
+
+vc6.0:
+argc = (int)fFloat;
+
+fld??? dword ptr [ebp-4]    //将地址ebp-4处的数据压入ST(0)中
+call?? _ftol (0040e688)     //VC6.0调用函数_ftol进行浮点数转换
+mov??? dword ptr [ebp+8],eax//转换结果位于eax中，所以把eax中的值传到ebp+8地址处
+
+vs2017:
+cvttss2si   eax,dword ptr [f]  
+mov         dword ptr [argc],eax
+
+cvtss2si r32,XMM/m32
+把源存储器低32位1个单精度浮点数转为1个32位有符号整数,放入目的寄存器.
+
+FPU: 8个80位浮点寄存器（数据），16位状态寄存器，16位控制寄存器，16为标识寄存器。
+使用FPU指令对这些寄存器进行操作，这些寄存器构成一个循环栈，st7栈底，st0栈顶，
+当一个值被压入时，被存入st0，原来st0中的值被存入st7
+MMX: 将8个FPU寄存器重命名为8个64位MMX寄存器，即mm0到mm7。[号称多媒体处理技术]
+57条MMX指令，加快了整形浮点运算，但是对于复杂浮点运算无帮助
