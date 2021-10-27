@@ -41,14 +41,12 @@
   - `thread.id` 线程id Number
   - `thread.state` 线程的状态 String (running | stopped | waiting | uninterruptible | halted) String
   - `thread.context` 线程上下文(EIP/RIP/PC and ESP/RSP/SP) NativePointer
-- `Process.enumerateThreadsSync(callbacks)` Process.enumerateThreads(callbacks)同步版本
 - `Process.findModuleByAddress(address) | Process.getModuleByAddress(address) | Process.findModuleByName(name) | Process.getModuleByName(name)` 获取地址对应的模块信息 Module 不存在该模块 find前缀会返回null get前缀会抛出异常
 - `Process.enumerateModules()` 获取进程加载的所有模块 module array
   - `module.name` 模块名称
   - `module.base` 模块基址
   - `module.size` 模块大小
   - `module.path` 模块路径
-- `Process.enumerateModulesSync()` enumerateModules()函数的同步版本，返回模块对象数组
 - `Process.findRangeByAddress(address) | getRangeByAddress(address)` 返回有关包含地址的范围的信息 object, 对应字段参考
 - `Process.enumerateRanges(protection|specifier)` 枚举指定类型protoction的内存块，以指定字符串给出"rwx", "rw-"标识至少可读可写，也可以使用分类符, 里面包含protection这个Key，取值就是前面提到的rwx，还有一个coalesce这个Key，表示是否要把位置相邻并且属性相同的内存块合并给出结果
   - `onMatch: function(range)` 每次枚举到一个内存块都回调回来，如果要停止枚举过程，直接返回stop即可.其中Range对象包含如下属性：
@@ -168,51 +166,144 @@
     {"name":"frida-agent-64.so","base":"0x7fc5fca9f000","size":24530944,"path":"/tmp/frida-772678697214ec92c9ab393027cde22d/frida-agent-64.so"}
     {"name":"libresolv-2.28.so","base":"0x7fc5fc684000","size":2183168,"path":"/usr/lib64/libresolv-2.28.so"}
     {"name":"libm-2.28.so","base":"0x7fc5fc0fa000","size":3678208,"path":"/usr/lib64/libm-2.28.so"}
- 
+
+    ## 设置异常处理函数 todo
+
   ```
 
 ### Module
-
-  Module.load() and Process.enumerateModules()等函数调用后返回Module对象，其中包含的属性
 
 - `Module.name` 模块名称 String
 - `Module.base` 模块基地址 NativePointer
 - `Module.size` 模块大小 size in bytes
 - `Module.path` 模块在文件系统中的完整路径 String
 - `Module.enumerateImports()` 枚举模块的导入表信息, object array
-  - `onMatch: function(imp)` 枚举到一个导入项到时候会被调用，imp包含如下的字段, 以下所有的属性字段，只有name字段是一定会有，剩余的其他字段不能保证都有，底层会尽量保证每个字段都能给出数据，但是不能保证一定能拿到数据，onMatch函数可以返回字符串stop表示要停止枚举。
-    - `imp.type` 导入表中的类型 (function | variable) String
-    - `imp.name`名称信息 String
-    - `imp.module` 模块名称 String
-    - `imp.address`绝对地址 NativePointer
-    - `imp.slot` 导入标的入口地址 NativePointer
-  - `onComplete: function()` 当所有的导入表项都枚举完成的时候会回调
-- `Module.eumerateImportsSync(name)` enumerateImports()的同步版本
-- `Module.enumerateExports(name, callbacks)` 枚举指定模块name的导出表项，结果用callbacks进行回调
-  - `onMatch: function(exp)` 函数返回stop的时候表示停止枚举过程，其中exp代表枚举到的一个导出项，包含如下几个字段
-    - `exp.type` 导出表中的类型 (function | variable) String
-    - `exp.name` 名称信息 String
-    - `exp.address` 绝对地址 NativePointer
-  - `onComplete: function()` 枚举完成时回调
-- `Module.enumerateExportsSync()` Module.enumerateExports()的同步版本
-- `Module.enumerateSymbols(name, callbacks)` 枚举指定模块中包含的符号，枚举结果通过回调进行通知
-  - `onMatch: function(sym)` 其中 sym 包含下面几个字段
-    - `sym.isGlobal` 全局可见标识 boolean
-    - `sym.type` 类型 (unknown | section | undefined(Mach-O) | absolute (Mach-O) | prebound-undefined (Mach-O) | indirect (Mach-O) | object (ELF)| function (ELF) | file   (ELF) | common (ELF) | tls (ELF)) String
-    - `section`: 如果这个字段不为空的话，包含如下属性
+  - `imp.type` 导入表中的类型 (function | variable) String
+  - `imp.name`名称信息 String
+  - `imp.module` 模块名称 String
+  - `imp.address`绝对地址 NativePointer
+- `Module.enumerateExports()` 枚举指定模块name的导出表项
+  - `exp.type` 导出表中的类型 (function | variable) String
+  - `exp.name` 名称信息 String
+  - `exp.address` 绝对地址 NativePointer
+- `Module.enumerateSymbols()` 枚举指定模块中包含的符号
+  - `isGlobal` 全局可见标识 boolean
+  - `type` 类型 (unknown | section | undefined(Mach-O) | absolute (Mach-O) | prebound-undefined (Mach-O) | indirect (Mach-O) | object (ELF)| function (ELF) | file   (ELF) | common (ELF) | tls (ELF)) String
+  - `section`: 如果这个字段不为空的话，包含如下属性
     - `section.id` String containing section index, segment name (if applicable) and section name – same format as r2’s section IDs
     - `section.protection` 读写属性，类似"rwx"
-    - `section.name` 符号名称 String
-    - `section.address` 绝对地址 NativePointer
-    - `section.size` if present, a Number specifying the symbol’s size in bytes
-- `Module.enumerateSymbolsSync(name)` Module.enumerateSymbols() 的同步版本
-  - `Module.enumerateRanges(name, protection, callbacks)` 功能基本等同于 Process.enumerateRanges(), 只不过多了一个模块名限定了枚举的范围
-  - `Module.findExportByName(exportName)` 根据导出函数名称获取函数地址，如果不存在对应的导出函数，返回null
-  - `Module.load(path)` 加载指定路径的模块, 如果加载失败，产生异常
-  - `Module.ensureInitialized(name)` 确保指定模块的初始化程序已经运行。这在早期检测期间很重要, 即代码在进程生命周期的早期运行，以便能够安全地与 API交互
-  - `Module.findBaseAddress(name)`获取模块基地址, 如果获取失败，产生异常
-  - `Module.findExportByName(moduleName|null, exportName)`
-  - `Module.getExportByName(moduleName|null, exportName)` 从指定模块中加载导出函数，如果模块名称未知，可以填null，但会花费时间去遍历所有模块，去查找对应的导出函数
+  - `section.name` 符号名称 String
+  - `section.address` 绝对地址 NativePointer
+  - `section.size` if present, a Number specifying the symbol’s size in bytes
+- `enumerateRanges(protection)` 枚举模块中指定内存属性的区域
+- `findExportByName(exportName)`
+- `getExportByName(exportName)` 根据导出函数名称获取函数地址(绝对地址)
+- `Module.load(path)` 加载指定模块
+
+  ``` shell
+  /*
+  function showImportsAndExports()
+  {
+    var module_array = Process.enumerateModules();
+
+    for(var i = 0; i < module_array.length; i++)
+    {
+      console.log("==================module Info===========================");
+      console.log(JSON.stringify(module_array[i]));
+
+      console.log("==================Import Table==========================");
+      var import_array = module_array[i].enumerateImports();
+
+      for(var j = 0; j < import_array.length; j++)
+      {
+        console.log(JSON.stringify(import_array[j]));
+      }
+
+      console.log("==================Export Table==========================");
+      var export_array = module_array[i].enumerateExports();
+      for(var m = 0; m < export_array.length; m++)
+      {
+        console.log(JSON.stringify(export_array[m]));
+      }
+    }
+  }
+  */
+  ## 查看进程内所有模块的导入和导出信息
+  ...
+  ==================Module Info===========================
+  {"name":"libtest.so","base":"0x7fb4f8442000","size":2105344,"path":"/root/hook/fridastest/libtest.so"}
+  ==================Import Table==========================
+  {"type":"function","name":"__cxa_finalize","module":"/usr/lib64/libc-2.28.so","address":"0x7fb4f80b6f40"}
+  ==================Export Table==========================
+  {"type":"function","name":"Add","address":"0x7fb4f8442579"}
+  ...
+
+  ## 查看模块符号信息  todo learn
+  /*
+  function showSymbols()
+  {
+    var module_array = Process.enumerateModules();
+
+    for(var i = 0; i < module_array.length; i++)
+    {
+      console.log("=====================Module Info=========================");
+      console.log(JSON.stringify(module_array[i]));
+
+      var symbol_array = module_array[i].enumerateSymbols();
+
+      console.log("====================Symbol Info==========================");
+      for(var j = 0; j < symbol_array.length; j++)
+      {
+        console.log(JSON.stringify(symbol_array[i]));
+      }
+    }
+  }
+  */
+  ...
+  {"isGlobal":false,"type":"section","section":{"id":"3.note.gnu.property","protection":"r-x"},"name":"","address":"0x7fb4f807d328","size":0}
+  {"isGlobal":false,"type":"section","section":{"id":"3.note.gnu.property","protection":"r-x"},"name":"","address":"0x7fb4f807d328","size":0}
+  {"isGlobal":false,"type":"section","section":{"id":"3.note.gnu.property","protection":"r-x"},"name":"","address":"0x7fb4f807d328","size":0}
+  {"isGlobal":false,"type":"section","section":{"id":"3.note.gnu.property","protection":"r-x"},"name":"","address":"0x7fb4f807d328","size":0}
+  {"isGlobal":false,"type":"section","section":{"id":"3.note.gnu.property","protection":"r-x"},"name":"","address":"0x7fb4f807d328","size":0}
+  {"isGlobal":false,"type":"section","section":{"id":"3.note.gnu.property","protection":"r-x"},"name":"","address":"0x7fb4f807d328","size":0}
+  {"isGlobal":false,"type":"section","section":{"id":"3.note.gnu.property","protection":"r-x"},"name":"","address":"0x7fb4f807d328","size":0}
+  {"isGlobal":false,"type":"section","section":{"id":"3.note.gnu.property","protection":"r-x"},"name":"","address":"0x7fb4f807d328","size":0}
+  {"isGlobal":false,"type":"section","section":{"id":"3.note.gnu.property","protection":"r-x"},"name":"","address":"0x7fb4f807d328","size":0}
+  {"isGlobal":false,"type":"section","section":{"id":"3.note.gnu.property","protection":"r-x"},"name":"","address":"0x7fb4f807d328","size":0}
+  {"isGlobal":false,"type":"section","section":{"id":"3.note.gnu.property","protection":"r-x"},"name":"","address":"0x7fb4f807d328","size":0}
+  {"isGlobal":false,"type":"section","section":{"id":"3.note.gnu.property","protection":"r-x"},"name":"","address":"0x7fb4f807d328","size":0}
+  {"isGlobal":false,"type":"section","section":{"id":"3.note.gnu.property","protection":"r-x"},"name":"","address":"0x7fb4f807d328","size":0}
+  ...
+
+  ## 根据导出函数名称获取导出函数并调用
+  /*
+  function GetProcessAddr(module_name, export_name)
+  {
+    var module = null;
+    var func_addr = null;
+    var func_add = null;
+    var ret = 0;
+
+    module = Process.getModuleByName(module_name);
+
+    console.log(JSON.stringify(module));
+    func_addr = module.getExportByName(export_name);
+    func_add = new NativeFunction(func_addr, 'int', ['int', 'int']);
+    ret = func_add(1,2);
+    console.log(ret);
+  }
+  */
+  [Local::PID::45417]-> GetProcessAddr("libtest.so", "Add");
+  {"name":"libtest.so","base":"0x7fb4f8442000","size":2105344,"path":"/root/hook/fridastest/libtest.so"}
+  3
+  [Local::PID::45417]-> GetProcessAddr("libtest.so", "Add2");
+  {"name":"libtest.so","base":"0x7fb4f8442000","size":2105344,"path":"/root/hook/fridastest/libtest.so"}
+  Error: /root/hook/fridastest/libtest.so: unable to find export 'Add2'
+    at value (frida/runtime/core.js:205)
+    at value (frida/runtime/core.js:244)
+    at GetProcessAddr (/test_get_export_addr.js:19)
+  ```
+
 ### ModuleMap
   `new ModuleMap([filter])` 可以理解为内存模块快照，主要目的是可以作为一个模块速查表，比如你可以用这个快照来快速定位一个具体的地址是属于哪个模块。创建ModuleMap的时候，就是对目标进程当前加载的模块的信息作一个快照，后续想要更新这个快照信息的时候，可以使用 update 进行更新。 这个 filter 参数是可选的，主要是用来过滤你关心的模块，可以用来缩小快照的范围（注意：filter是过滤函数，不是字符串参数），为了让模块进入这个快照里，过滤函数的返回值要设置为true，反之设为false，如果后续内存中的模块加载信息更新了， 还会继续调用这个filter函数。
   - `has(address)` 检测地址是否处于模块中
